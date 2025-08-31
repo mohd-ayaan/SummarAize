@@ -46,7 +46,8 @@ const upload = multer({
 
 // 5. Health check route
 app.get('/health', (req, res) => {
-  res.send('Backend is up and running!');
+  res.json({ status: "Backend is up and running!" });
+
 });
 
 // 6. Document upload and summary generation
