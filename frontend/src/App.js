@@ -47,12 +47,15 @@ function App() {
       formData.append("summaryLength", summaryLength);
 
       try {
-        const response = await fetch("http://localhost:5000/upload-document", {
-          method: "POST",
-          body: formData,
-        });
+        // Use environment variable for backend URL
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/upload-document`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
-        // Ensure response is OK before parsing JSON
         if (!response.ok) {
           const errorResult = await response.json();
           throw new Error(errorResult.message || "Unknown server error");
@@ -61,7 +64,6 @@ function App() {
         const result = await response.json();
 
         if (result.summary) {
-          // Check if summary exists in the response
           setSummary(result.summary);
           console.log("Summary received:", result.summary);
         } else {
@@ -70,14 +72,13 @@ function App() {
         }
       } catch (error) {
         console.error("Error during upload:", error);
-        setSummary("Error connecting to the server. Please try again.");
+        setSummary(`Error: ${error.message}`);
       } finally {
         setIsUploading(false);
       }
     }
   };
 
-  // This function will take the plain text summary and format it for display
   const formatSummary = (text) => {
     if (!text) return null;
 
@@ -99,7 +100,7 @@ function App() {
         const content = match[2].trim();
         formattedItems.push({ label, content });
       }
-    } 
+    }
 
     if (foundMarkdownBullets) {
       return (
@@ -113,7 +114,6 @@ function App() {
       );
     }
 
-    // Fallback: render as paragraphs
     return lines.map((line, index) => <p key={index}>{line}</p>);
   };
 
@@ -178,14 +178,11 @@ function App() {
         {summary && (
           <div className="summary-container">
             <h3>Summary:</h3>
-            <div className="summary-box">
-              {/* Call formatSummary here to render the structured output */}
-              {formatSummary(summary)}
-            </div>
+            <div className="summary-box">{formatSummary(summary)}</div>
           </div>
         )}
       </header>
-       <Footer />
+      <Footer />
     </div>
   );
 }
