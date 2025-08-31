@@ -1,5 +1,3 @@
-// server.js
-
 // 1. Import required packages
 const express = require('express');
 const multer = require('multer');
@@ -11,7 +9,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 5000; // Dynamic port for Render
+const port = process.env.PORT || 5000;
 
 // 2. Middleware setup
 app.use(cors());
@@ -47,15 +45,24 @@ const upload = multer({
 // 5. Health check route
 app.get('/health', (req, res) => {
   res.json({ status: "Backend is up and running!" });
-
 });
 
 // 6. Document upload and summary generation
 app.post('/upload-document', upload.single('document'), (req, res) => {
-  if (!req.file) return res.status(400).send('No file uploaded.');
+  if (!req.file) {
+    return res.status(400).json({
+      error: 'No file uploaded',
+      details: 'Please attach a PDF or image file under the "document" field.',
+    });
+  }
 
   const filePath = req.file.path;
   const summaryLength = req.body.summaryLength || 'medium';
+  const validTypes = ['short', 'medium', 'long'];
+
+  if (!validTypes.includes(summaryLength)) {
+    return res.status(400).json({ error: 'Invalid summary length type' });
+  }
 
   const pythonProcess = spawn('python', [path.join(__dirname, 'process_document.py'), filePath]);
 
@@ -72,17 +79,19 @@ app.post('/upload-document', upload.single('document'), (req, res) => {
 
   pythonProcess.on('close', async (code) => {
     try {
-      fs.unlinkSync(filePath); // Clean up uploaded file
+      fs.unlinkSync(filePath);
     } catch (err) {
       console.error('File cleanup error:', err);
     }
 
     if (code !== 0) {
       console.error('Python script error:', errorData);
-      return res.status(500).send('Error processing document.');
+      return res.status(500).json({
+        error: 'Document processing failed',
+        details: errorData || 'Unknown error',
+      });
     }
 
-    // Construct prompt based on summary length
     let prompt = '';
     if (summaryLength === 'short') {
       prompt = `You are an AI summarizer. Provide a very concise, one-paragraph summary of the following text, highlighting the key points:\n\n${extractedText}`;
@@ -96,6 +105,10 @@ app.post('/upload-document', upload.single('document'), (req, res) => {
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const summary = response.text();
+
+      if (typeof summary !== 'string') {
+        return res.status(500).json({ error: 'Invalid summary format' });
+      }
 
       res.status(200).json({
         message: 'Summary generated successfully!',
