@@ -1,4 +1,4 @@
-**SummarAIze**
+### SummarAIze
 
 ## 📝 Description
 
