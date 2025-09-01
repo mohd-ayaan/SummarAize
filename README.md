@@ -1,5 +1,15 @@
 ### SummarAIze
 
+## My Technical Approach
+For the technical assessment, I developed a full-stack **Document Summary Assistant** to demonstrate proficiency in building a complete, real-world application. My approach centered on a clean, scalable architecture with a clear separation of concerns.
+
+The application’s front end, built with **React**, provides a simple, intuitive user interface with drag-and-drop and file-picker functionality for document uploads. It includes visual feedback like loading states for an optimal user experience, and a polished Neumorphism design for visual appeal.
+
+The back end is powered by a **Node.js/Express** server that acts as a central API. Upon receiving a file, the server orchestrates the entire process. It routes PDF files to a Python microservice that uses **PyMuPDF** for text extraction, and images to the same service for **OCR** using the **Tesseract** engine. This separation was a key decision to leverage Python's strong ecosystem for specialized tasks while keeping the core server lightweight.
+
+Finally, the extracted text is sent to the **Gemini API**, which intelligently generates a summary based on the user's selected length (short, medium, long). The final summary is then returned to the front end and displayed to the user. This architecture is robust, efficient, and easily scalable for a production environment.
+
+
 ## 📝 Description
 
 **SummarAIze** is a full-stack web application that simplifies document analysis by generating smart, AI-powered summaries from any uploaded PDF or image. The application provides an intuitive drag-and-drop interface, making it easy for users to quickly get the essential information and key points from their documents. It is a powerful tool for students, researchers, and professionals who need to digest large amounts of information efficiently.
